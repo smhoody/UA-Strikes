@@ -29,16 +29,21 @@ def deriv_sigmoid(z):
 
 def train(data):
     ''' Train the 3x2x2 model with given data '''
-    n = 0.0001 # learning rate
-    w0 = np.array([[1,1],
-                   [1,1],
-                   [1,1]]) #input layer weight matrix
-    w1 = np.array([[1,1],
-                   [1,1]]) #layer 1 weight matrix
+    n = 0.000001 # learning rate
+    # w0 = np.array([[4.34,0.22],
+    #                [21.71,1.12],
+    #                [17.37,0.9]]) #input layer weight matrix
+    # w1 = np.array([[91,4.73],
+    #                [11.17,0.58]]) #layer 1 weight matrix
+    w0 = np.array([[0.353,0.033],
+                   [19.858,0.78],
+                   [14.528,0.57]]) #input layer weight matrix
+    w1 = np.array([[-0.25,-0.163],
+                   [6.459,4.222]]) #layer 1 weight matrix
 
-    epochs = 2500
-    bias_1 = 0 #layer 1 bias
-    bias_2 = 0 #layer 2 bias
+    epochs = 10000
+    bias_1 = 6.649 #layer 1 bias
+    bias_2 = 6.699 #layer 2 bias
     loss = 0
 
     for epoch in range(epochs):
@@ -65,8 +70,8 @@ def train(data):
             #loss = 1/2 * (yHat - target)^2
             raw_loss = np.subtract(yHat_l1, target)
             loss = 0.5 * np.power(raw_loss, 2)
-            if (raw_loss[0] < 1.8 and raw_loss[1] < 2.1):
-                np.subtract(loss, [0.5*loss[0], 0.5*loss[1]])
+            # if (raw_loss[0] < 1.8 and raw_loss[1] < 2.1):
+            #     np.subtract(loss, [0.5*loss[0], 0.5*loss[1]])
 
             #---Backpropagation---
             # dE/dPredict
@@ -104,11 +109,12 @@ def train(data):
             #print(w0)
             #print(w1)
             #print("dE/dW")
-            #print(partial_L_w0)
-            #print(partial_L_w1)
-            #print(f"Bias1: {bias_1}  |   Bias2: {bias_2}")
-            #print(f"Loss: {loss}")
-            #if (epoch == 500): exit()
+            # if (epoch >= 791 and sample_num % 100 == 0): 
+            #     if (epoch == 792): exit()
+            #     print(partial_L_w0)
+            #     print(partial_L_w1)
+            #     print(f"Bias1: {bias_1}  |   Bias2: {bias_2}")
+            #     print(f"Loss: {loss}")
         print(f"Epoch {epoch+1} loss: {loss}")
 
     return w0, w1, bias_1, bias_2
@@ -128,7 +134,7 @@ def read_data():
     '''
     training = []
     test = []
-    #every 3rd sample goes to training
+    #every 3rd sample goes to testing
     for i, sample in enumerate(data):
         if (i%3==0): test.append(sample)
         else: training.append(sample)
@@ -172,7 +178,7 @@ def test(w0, w1, bias_1, bias_2, data):
 
         loss = np.absolute(np.subtract(yHat_l1, target))
         # print(f"Prediction: {yHat_l1}  Target: {target}  |  loss: {loss}")
-        #correct approx if loss is within 0.2 deg latitude & 0.27 deg longitude
+        #correct approx if loss is within 1.8 deg latitude & 2.1 deg longitude (~228km^2)
         if (loss[0] < 1.8 and loss[1] < 2.1): 
             passed += 1
             correct_coords[",".join(map(str,input))] = yHat_l1

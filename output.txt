@@ -1,4 +1,4 @@
-date,latitude,longitude
+dayofweek,dayofmonth,month,latitude,longitude
 3,24,2,49.212119,38.905921
 3,24,2,48.055395,37.7783
 3,24,2,47.775609,37.239673
