@@ -4,7 +4,6 @@ Neural Network for predicting Enemy missile strikes in Ukraine
 @Author: Steven Hoodikoff
 '''
 
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -19,34 +18,25 @@ def deriv_relu(z): #ReLU derivative
     #e.g. [53, 13, -4] => [1, 1, 0]
     return (z > 0).astype(float)
 
-def sigmoid(z):
-    ''' Sigmoid function '''
-    return 1 / (1 + math.e ** (-z))
-
-def deriv_sigmoid(z):
-    return sigmoid(z)*(1-sigmoid(z))
-
 
 def train(data):
     ''' Train the 3x2x2 model with given data '''
-    n = 0.000001 # learning rate
-    # w0 = np.array([[4.34,0.22],
-    #                [21.71,1.12],
-    #                [17.37,0.9]]) #input layer weight matrix
-    # w1 = np.array([[91,4.73],
-    #                [11.17,0.58]]) #layer 1 weight matrix
+    n = 0.0000001 # learning rate
+
     w0 = np.array([[0.353,0.033],
                    [19.858,0.78],
                    [14.528,0.57]]) #input layer weight matrix
     w1 = np.array([[-0.25,-0.163],
                    [6.459,4.222]]) #layer 1 weight matrix
 
-    epochs = 10000
+    epochs = 2000
     bias_1 = 6.649 #layer 1 bias
     bias_2 = 6.699 #layer 2 bias
     loss = 0
+    samples = len(data)
 
     for epoch in range(epochs):
+        epoch_loss = 0
         for sample_num, sample in enumerate(data):
             #sample format: [dayofweek,dayofmonth,month,latitude,longitude]
             input = sample[:3] #get date data
@@ -55,21 +45,21 @@ def train(data):
             #---Forward prop---
             #calculate z = W_T*x + b for layer 1
             weighted_sum = np.dot(w0.T, input) #multiply weights x input vector
-            z1 = np.add(weighted_sum, bias_1)
+            z1 = weighted_sum + bias_1
 
             #pass layer 0 sum to activation function
             yHat_l0 = relu(z1)
 
             #calculate z = W_T*x + b for layer 2
             weighted_sum = np.dot(w1.T, yHat_l0)
-            z2 = np.add(weighted_sum, bias_2)
+            z2 = weighted_sum + bias_2
 
             #pass layer 1 sum to activation function
             yHat_l1 = relu(z2)
 
             #loss = 1/2 * (yHat - target)^2
-            raw_loss = np.subtract(yHat_l1, target)
-            loss = 0.5 * np.power(raw_loss, 2)
+            loss = 0.5 * np.power(yHat_l1 - target, 2)
+            epoch_loss += loss
             # if (raw_loss[0] < 1.8 and raw_loss[1] < 2.1):
             #     np.subtract(loss, [0.5*loss[0], 0.5*loss[1]])
 
@@ -77,8 +67,8 @@ def train(data):
             # dE/dPredict
             loss_deriv = np.subtract(yHat_l1, target) #2x1 vector
             # dPredict/dReLU for layer 1 and 2
-            relu_deriv_l2 = deriv_relu(yHat_l1) #2x1 vector 
-            relu_deriv_l1 = deriv_relu(yHat_l0) #2x1 vector
+            relu_deriv_l2 = deriv_relu(z2) #2x1 vector 
+            relu_deriv_l1 = deriv_relu(z1) #2x1 vector
 
             #calculate dL/dWi = dL*dReLU * Wi   (i=layer)
             #first take Hadamard product of Loss' & ReLU' 
@@ -99,12 +89,16 @@ def train(data):
             
             # update weight matricies for layer 0 and 1
             # w = w - a * dE/dw
-            w0 = np.subtract(w0, np.array(np.dot(n, partial_L_w0)).T)
-            w1 = np.subtract(w1, np.array(np.dot(n, partial_L_w1)).T)
+            w0 = w0 - (n * partial_L_w0).T
+            w1 = w1 - (n * partial_L_w1).T
             
             #print("Activations")
             #print(yHat_l0)
             #print(yHat_l1)
+            # print(partial_L_w0)
+            # print(partial_L_w1)
+            # print("dot")
+            # print(np.dot(n, partial_L_w0))
             #print("Weights")
             #print(w0)
             #print(w1)
@@ -115,7 +109,7 @@ def train(data):
             #     print(partial_L_w1)
             #     print(f"Bias1: {bias_1}  |   Bias2: {bias_2}")
             #     print(f"Loss: {loss}")
-        print(f"Epoch {epoch+1} loss: {loss}")
+        print(f"Epoch {epoch+1} loss: {epoch_loss/samples}")
 
     return w0, w1, bias_1, bias_2
 
