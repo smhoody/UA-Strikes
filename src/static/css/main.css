@@ -1,0 +1,30 @@
+body {
+    margin:0;
+    font-size: 2em;
+    font-family: sans-serif;
+}
+
+#dateForm {
+    margin-top: 15px;
+}
+#date {
+    width: 80;
+    height: 30;
+    font-size: 1.3em;
+    border-radius: 10px;
+    margin-right: 10px;
+    padding-left: 7px;
+}
+
+#date-button {
+    width: 50;
+    height: 30;
+    font-size: 1.3em;
+    border-radius: 20px;
+    font-family: "system-ui";
+    cursor: pointer;
+    border: 1px solid rgba(36,36,36.0.3);
+    text-shadow: 1px 1px 2px rgb(14, 14, 14, 0.4);
+    padding-left: 8px;
+    padding-right: 8px;
+}
