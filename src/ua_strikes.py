@@ -9,18 +9,19 @@ import matplotlib.pyplot as plt
 from util import Util
 
 class StrikeNN:
-    def __init__(self, data=[]):
+    def __init__(self, data=[], test_data=[]):
         self.n = 0.0000001 # learning rate
         self.w0 = np.array([[0.353,0.033],
-                    [19.858,0.78],
-                    [14.528,0.57]]) #input layer weight matrix
+                            [19.858,0.78],
+                            [14.528,0.57]]) #input layer weight matrix
         self.w1 = np.array([[-0.25,-0.163],
-                    [6.459,4.222]]) #layer 1 weight matrix
+                            [6.459,4.222]]) #layer 1 weight matrix
 
         self.bias_1 = 6.649 #layer 1 bias
         self.bias_2 = 6.699 #layer 2 bias
         self.loss = 0
         self.data = data
+        self.test_data = test_data
         self.samples = len(data)
         self.accuracy = 0
         self.prediction_confidence = 0
@@ -99,12 +100,11 @@ class StrikeNN:
     def test(self):
         ''' Test model with unseen data '''
         passed = 0
-        total = len(self.data)
-        # closest_coords = np.array([0,0])
+        total = len(self.test_data)
         correct_coords = {}
         losses = []
 
-        for sample_num, sample in enumerate(self.data):
+        for sample_num, sample in enumerate(self.test_data):
             input = sample[:3] #get date data
             target = sample[3:] #get lat,long 
 

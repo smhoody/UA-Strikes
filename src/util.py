@@ -10,6 +10,17 @@ class Util:
         self.testing_data = [] #holds data for testing
 
     def read_data(self):
+        ''' Read Missile strike CSV data from file
+        
+        Once finished, use get_data(), get_training_data(), or get_testing_data()
+        to access formatted data.
+
+        Format: 
+        [{"day_of_week":int, "day_of_month":int, "month":int, 
+            "latitude":float , "longitude":float}, ...]
+        
+        :return: None
+        '''
         # Read CSV and save necessary data (date & coordinates)
         with open(self.input_file, 'r', encoding="utf-8") as csv_file:
             reader = csv.reader(csv_file)
@@ -24,11 +35,12 @@ class Util:
                 #finished formatting is: dayofweek,dayofmonth,month,latitude,longitude
                 self.data.append(formatted_row)
         
-        self.partition_data() #separate into training and test data
+        self.__partition_data() #separate into training and test data
 
 
-    def partition_data(self):
-        ''' Separate sample data into batches
+    def __partition_data(self):
+        ''' Private helper function 
+        Separate sample data into batches
         return :list, list: list of training and test samples  
         '''
 
@@ -59,3 +71,12 @@ class Util:
         df["month"] = int(df["date"].month)
 
         return df
+    
+    def get_data(self):
+        return self.data
+    
+    def get_training_data(self):
+        return self.training_data
+    
+    def get_testing_data(self):
+        return self.training_data
