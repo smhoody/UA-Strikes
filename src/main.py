@@ -3,6 +3,7 @@ import folium
 import geopandas
 from ua_strikes import StrikeNN
 from util import Util
+from stats import Stats
 
 app = Flask(__name__)
 trained = False #flag for if the neural network has been trained or not
@@ -10,14 +11,16 @@ trained = False #flag for if the neural network has been trained or not
 util = Util() #instantiate utility class
 util.read_data() #read missile strike data
 network = StrikeNN(data=util.training_data, test_data=util.testing_data) #instantiate neural network
-network.train(epochs=1000) #train network
+network.train(epochs=100) #train network
 network.test()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     input_date = "02/24/2022"
+    strike_marker_count = 0
     if (request.method == "POST"): #if a POST request was made on the index page
-        input_date = request.form["date"] #get date from input
+        input_date = request.form.get("date", 0) #get date from input
+        strike_marker_count = int(request.form.get("strike-count", 0))
 
     '''
     Ukraine coordinate bounds
@@ -36,12 +39,13 @@ def index():
                         </form>
                     </div>        
                 """
-    date_js_function = """
-    <script>
-        function submitDate() {
-            
-        }
-    </script>
+    strikes_slider_element = """
+                    <div style="position: fixed; right: 10vw; z-index:10000;">
+                        <form id="strike-markers-form" method="post">
+                            <input type="range" id="strike-count" name="strike-count">
+                            <button type="submit" id="marker-button">Place markers</button>
+                        </form>
+                    </div>
     """
     #zoom range 6-12 (farther - closer)
     m = folium.Map(location=[48.253788, 30.714256], 
@@ -55,7 +59,7 @@ def index():
                    max_zoom=12)
     
     #add HTML elements to map page
-    m.get_root().html.add_child(folium.Element(title_html + date_select_element + date_js_function))
+    m.get_root().html.add_child(folium.Element(title_html + date_select_element + strikes_slider_element))
 
     #fill Ukraine outline on map 
     folium.GeoJson(ua_geojson, style_function=lambda feature: {
@@ -66,16 +70,31 @@ def index():
     }).add_to(m)
 
     # Get prediction from neural network
-    coord_prediction = network.predict(input_date)
+    coord_prediction_region = network.predict_m1(input_date)
+    coord_prediction_precision = network.predict(input_date)
 
     #draw prediction area on map
-    folium.Circle(location=coord_prediction,
+    folium.Circle(location=coord_prediction_region,
                         radius=100000, #radius in meters
-                        color="red",
+                        color="orange",
                         fill=True,
                         fill_opacity=0.5,
                         opacity=1).add_to(m)
+    folium.Circle(location=coord_prediction_precision,
+                        radius=25000,
+                        color="red",
+                        fill=True,
+                        fill_opacity=0.8,
+                        opacity=1).add_to(m)
 
+    stats = Stats()
+    all_strikes_dict = stats.get_all_strikes_by_day()
+    #re-format strikes from {"{day}:[[30,40],[34,45]], ..."}
+    # into => [[30,40],[34,45],...]
+    strikes_list = [coord for coords_list in all_strikes_dict.values() for coord in coords_list]
+    for i in range(int(len(strikes_list)*(strike_marker_count/100))):
+        folium.Marker(location=strikes_list[i]).add_to(m)
+    print(f"Marker count: {strike_marker_count}")
     map_html = m.get_root().render()
 
     return render_template('index.html', map=map_html)

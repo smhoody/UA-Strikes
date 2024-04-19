@@ -22,18 +22,19 @@ class Stats:
         '''
         strikes_hash_table = {}
         for sample in self.data:
-            key = "-".join(sample[:3])
-            if (strikes_hash_table[key] is None):
-                strikes_hash_table[key] = [sample[3:]]
+            strike_data = sample.split(",")
+            key = "-".join(strike_data[:3])
+            if (strikes_hash_table.get(key) is None):
+                strikes_hash_table[key] = [[float(coord) for coord in strike_data[3:]]]
             else:
-                strikes_hash_table[key].append(sample[3:])
+                strikes_hash_table[key].append([float(coord) for coord in strike_data[3:]])
         
         return strikes_hash_table
 
     def graph_strikes(self, number_of_days):
         strike_table = self.get_all_strikes_by_day()
         iterator = 0
-        while (strike_table[iterator])
+        # while (strike_table[iterator])
             
 
         plt.plot(number_of_days)
