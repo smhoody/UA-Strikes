@@ -130,10 +130,10 @@ test_loader = DataLoader(test_dataset, batch_size=32)
 
 # Initialize the model, loss function, and optimizer
 input_size_m1 = 3  # Example: Number of input features (day of week, day of month, month of year)
-hidden_size_m1 = 90
+hidden_size_m1 = 21
 output_size_m1 = 2 * 3 # Output size for latitude and longitude
-input_size_m2 = 3  # Example: Number of input features (day of week, day of month, month of year)
-hidden_size_m2 = 90
+input_size_m2 = 7  # Example: Number of input features (day of week, day of month, month of year)
+hidden_size_m2 = 14
 output_size_m2 = 2 # Output size for latitude and longitude
 model = MissileStrikePredictor(input_size_m1, hidden_size_m1, output_size_m1)
 model2 = MissileStrikePredictor(input_size_m2, hidden_size_m2, output_size_m2)
@@ -276,10 +276,10 @@ while (num_samples > 0):
 
             features_m2 = []
             labels_m2 = []
-            if (len(training_data_m2) == 0): continue #if training data is empty, m1 prediction was so bad that there aren't examples
+            if (len(training_data_m2) < 3): continue #if training data is too small, m1 prediction was so bad that there aren't examples
             for sample in training_data_m2:
-                features_m2.append(sample[:3])
-                labels_m2.append(sample[3:])
+                features_m2.append(sample[:3] + new_output) #date + coordinate range
+                labels_m2.append(sample[3:]) # target coordinates
 
             # Convert to numpy arrays
             features_m2 = np.array(features_m2)
@@ -303,9 +303,9 @@ while (num_samples > 0):
 
             
             #train 2nd model 
-            num_epochs_m2 = 1800
+            num_epochs_m2 = 50
             for epoch in range(num_epochs_m2):
-                model.train()
+                model2.train()
                 for inputs, targets_m2 in train_loader:
                     optimizer_m2.zero_grad()
                     outputs = model2(inputs)
@@ -323,14 +323,22 @@ while (num_samples > 0):
 
                 # test_loss /= len(test_loader)
                 # print(f'Epoch {epoch+1}/{num_epochs_m2}, Test Loss: {test_loss:.4f}')
-
+            
+            #combine the coordinate range and date as input for evaluation 
+            concat_tile = np.tile(new_output, (len(x_test_tensor), 1))
+            x_test_tensor_m2 = torch.tensor(np.concatenate((x_test_tensor, concat_tile),axis=1), dtype=torch.float32)
+            
+            model2.eval()
             m2_loss = 0
             # Make predictions
             with torch.no_grad():
-                model_predictions_m2 = model2(x_test_tensor)
+                #model2 returns a list of predictions. The sample_num corresponds to
+                # each prediction
+                model_predictions_m2 = model2(x_test_tensor_m2)
                 # get average loss of lat and long
                 m2_loss = (np.abs(model_predictions_m2[sample_num][0]-target[0]) + \
                            np.abs(model_predictions_m2[sample_num][1]-target[1]))/2
+                print(f"mpm2: {len(model_predictions_m2)} | lm2: {len(labels_m2)}")
 
             # print(f"Prediction: {model_predictions_m2[sample_num]} | Actual: {target})")
             #check if loss is within bound (~62km)
