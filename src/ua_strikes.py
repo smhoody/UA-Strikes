@@ -1,5 +1,25 @@
 '''
-Neural Network for predicting Enemy missile strikes in Ukraine
+2 (Regional & Precision) Neural Networks for predicting Enemy missile strikes in Ukraine
+
+How to:
+- Get data from util and separate into training and testing batches
+- Instantiate StrikeNN object
+- Train model 1 (regional) using train_model1() method
+- Test model 1 using test_model1() method
+- Train model 2 (precision) using train_model2() method
+- Test model 2 using test_model2() method
+- Make a prediction using predict() method  
+
+Example:
+network = StrikeNN(data=util.training_data, test_data=util.testing_data)
+network.train_model1(epochs=100) 
+network.train_model2(epochs=100)
+network.test_model1()
+network.test_model2()
+date = [4,26,2]
+network.predict(date)
+
+
 @Date: 02/26/2024
 @Author: Steven Hoodikoff
 '''
@@ -37,7 +57,7 @@ class StrikeNN:
         return (z > 0).astype(float)
 
 
-    def train(self, epochs=1000):
+    def train_model1(self, epochs=1000):
         ''' Train the 3x2x2 model with given data '''
 
         for epoch in range(epochs):
@@ -97,7 +117,7 @@ class StrikeNN:
                 
 
 
-    def test(self):
+    def test_model1(self):
         ''' Test model with unseen data '''
         passed = 0
         total = len(self.test_data)
@@ -132,12 +152,14 @@ class StrikeNN:
         print(f"Accuracy: {passed/total*100:0.3f}%\n")
 
 
-    def predict_m1(self, date):
+    def predict_m1(self, date, formatted=False):
         ''' Receive a date and create a prediction '''
-        util = Util()
-        df = util.get_formatted_date(date) #convert date to accepted input type (DoW, DoM, month)
-        date_input = [df["day_of_week"], df["day_of_month"], df["month"]]
-        print("input:",date_input)
+        date_input = date
+        if (not formatted):
+            util = Util()
+            df = util.get_formatted_date(date) #convert date to accepted input type (DoW, DoM, month)
+            date_input = [df["day_of_week"], df["day_of_month"], df["month"]]
+        # print("input:",date_input)
 
         #---MODEL 1 CALCULATIONS (REGIONAL)---
         #input layer
@@ -149,7 +171,7 @@ class StrikeNN:
         z2 = weighted_sum + self.bias_2
         yHat_l1 = self.relu(z2) #final answer from model 1
 
-        print("M1 prediction:",yHat_l1)
+        # print("M1 prediction:",yHat_l1)
         return yHat_l1
     
     def convert_model1_output(self, coords):
@@ -320,13 +342,13 @@ class StrikeNN:
         print(f"M2 Accuracy: {passed/total*100:0.3f}%\n")
 
 
-    def predict_model2(self, date):
+    def predict_model2(self, date, formatted=False):
         ''' Create a prediction using the Model 2 (precision) network 
         :return: list  [latitude, longitude]
         '''
 
         #Model 1 computation
-        m1_prediction = self.predict_m1(date)
+        m1_prediction = self.predict_m1(date, formatted)
         #Convert output to range
         m1_pred_range = self.convert_model1_output(m1_prediction)
         m2_train_data, m2_test_data = self.get_samples(m1_pred_range)
@@ -341,8 +363,13 @@ class StrikeNN:
         z2 = weighted_sum + m2_b2
         yHat_l1 = self.relu(z2) #final answer
 
-        print(f"M2 prediction:", yHat_l1)
+        # print(f"M2 prediction:", yHat_l1)
         return yHat_l1
     
-    def predict(self, date):
-        return self.predict_model2(date)
+    def predict(self, date, formatted=False):
+        ''' User method for creating a coordinate prediction 
+            given a date.
+        :param: date (int list) - [day_of_week, day_of_month, month_of_year]
+        :return: float list - [latitude, longitude]
+        '''
+        return self.predict_model2(date, formatted)

@@ -16,8 +16,8 @@ class Util:
         to access formatted data.
 
         Format: 
-        [{"day_of_week":int, "day_of_month":int, "month":int, 
-            "latitude":float , "longitude":float}, ...]
+        [[day_of_week:int, day_of_month:int, month:int, 
+            latitude:float, longitude:float], ...]
         
         :return: None
         '''
@@ -41,7 +41,7 @@ class Util:
     def __partition_data(self):
         ''' Private helper function 
         Separate sample data into batches
-        return :list, list: list of training and test samples  
+        return :None: sets attribute lists of training and test data  
         '''
 
         #every 3rd sample goes to testing
@@ -79,4 +79,4 @@ class Util:
         return self.training_data
     
     def get_testing_data(self):
-        return self.training_data
+        return self.testing_data

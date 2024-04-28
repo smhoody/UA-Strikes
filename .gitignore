@@ -5,3 +5,4 @@ test.py
 ua_strikes_main.py
 /error-output
 /src/__pycache__
+/src/test.py

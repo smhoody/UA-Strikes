@@ -11,8 +11,8 @@ trained = False #flag for if the neural network has been trained or not
 util = Util() #instantiate utility class
 util.read_data() #read missile strike data
 network = StrikeNN(data=util.training_data, test_data=util.testing_data) #instantiate neural network
-network.train(epochs=100) #train network
-network.test()
+network.train_model1(epochs=100) #train M1 network
+network.test_model1()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

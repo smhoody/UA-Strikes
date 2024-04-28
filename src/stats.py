@@ -31,17 +31,22 @@ class Stats:
         
         return strikes_hash_table
 
-    def graph_strikes(self, number_of_days):
+    def graph_strikes(self):
+        '''
+        Count the number of strikes for each day and graph them
+        :return: None
+        '''
         strike_table = self.get_all_strikes_by_day()
-        iterator = 0
-        # while (strike_table[iterator])
-            
+        strike_count = [] #this will be the list to graph
+        for strikes in strike_table.values():
+            strike_count.append(len(strikes))
 
-        plt.plot(number_of_days)
+        plt.scatter(range(len(strike_count)), strike_count)
         plt.ylabel("Number of Strikes")
         plt.xlabel("Days from Start of War")
+        plt.xticks(np.arange(0, 500, step=50))
         plt.yticks(np.arange(0, 30, step=4), minor=True)
-        plt.title("Number of Strikes Per Day")
+        plt.title("Missile Strikes")
         plt.show()
 
     def get_strike_count(self, coordinate_range):
