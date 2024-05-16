@@ -8,6 +8,7 @@ from stats import Stats
 app = Flask(__name__)
 trained = False #flag for if the neural network has been trained or not
 
+stats = Stats()
 util = Util() #instantiate utility class
 util.read_data() #read missile strike data
 network = StrikeNN(data=util.training_data, test_data=util.testing_data) #instantiate neural network
@@ -69,7 +70,7 @@ def index():
         "weight":0
     }).add_to(m)
 
-    # Get prediction from neural network
+    # Get prediction from neural networks
     coord_prediction_region = network.predict_m1(input_date)
     coord_prediction_precision = network.predict(input_date)
 
@@ -81,20 +82,20 @@ def index():
                         fill_opacity=0.5,
                         opacity=1).add_to(m)
     folium.Circle(location=coord_prediction_precision,
-                        radius=25000,
+                        radius=2500,
                         color="red",
                         fill=True,
                         fill_opacity=0.8,
                         opacity=1).add_to(m)
 
-    stats = Stats()
+    
     all_strikes_dict = stats.get_all_strikes_by_day()
     #re-format strikes from {"{day}:[[30,40],[34,45]], ..."}
     # into => [[30,40],[34,45],...]
     strikes_list = [coord for coords_list in all_strikes_dict.values() for coord in coords_list]
     for i in range(int(len(strikes_list)*(strike_marker_count/100))):
         folium.Marker(location=strikes_list[i]).add_to(m)
-    print(f"Marker count: {strike_marker_count}")
+
     map_html = m.get_root().render()
 
     return render_template('index.html', map=map_html)

@@ -72,6 +72,21 @@ class Util:
 
         return df
     
+    def get_samples_in_range(self, data, coord_range):
+        ''' Get all samples within a coordinate range
+        :param: data - list of strike samples
+        :param: coord_range - list of lower & upper bounds for lat/lng coords
+        :return: new_data - list of all samples within range of input coordinates 
+        '''
+        new_data = []
+        for sample in data:
+            #check if sample is within coordinate range
+            if (coord_range[0] <= sample[3] <= coord_range[2] \
+                and coord_range[1] <= sample[4] <= coord_range[3]):
+                new_data.append(sample)
+                
+        return new_data
+
     def get_data(self):
         return self.data
     
